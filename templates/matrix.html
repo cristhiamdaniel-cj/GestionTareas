@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz de Eisenhower</title>
+    <style>
+        .matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            margin: 20px;
+        }
+        .quadrant {
+            border: 1px solid black;
+            padding: 10px;
+            border-radius: 5px;
+            min-height: 150px;
+            background-color: #f0f0f0;
+        }
+        .quadrant h3 {
+            margin: 0;
+            text-align: center;
+        }
+        .task {
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid gray;
+            border-radius: 3px;
+            background: #ffffff;
+            cursor: grab;
+        }
+        .controls {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Matriz de Eisenhower</h1>
+    <div class="controls">
+        <a href="{% url 'create_task' %}">Agregar Tarea</a>
+        <a href="{% url 'audit_log' %}">Auditoría</a>
+    </div>
+    <div class="matrix">
+        {% for key, quadrant in tasks.items %}
+        <div class="quadrant" id="{{ key }}" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <!-- Descripciones emergentes para las siglas -->
+            <h3 
+                {% if key == "UI" %}
+                title="Urgente e Importante: Estas tareas deben ser realizadas de inmediato."
+                {% elif key == "NI" %}
+                title="No Urgente e Importante: Estas tareas son importantes pero pueden ser planificadas."
+                {% elif key == "IN" %}
+                title="Urgente y No Importante: Estas tareas deben delegarse."
+                {% elif key == "NN" %}
+                title="No Urgente y No Importante: Estas tareas deben eliminarse o ignorarse."
+                {% endif %}
+            >
+                {{ key }}
+            </h3>
+            {% for task in quadrant %}
+            <div class="task" draggable="true" ondragstart="drag(event)" data-id="{{ task.id }}">
+                <strong>{{ task.title }}</strong>
+                <div>
+                    <a href="{% url 'update_task' task.id %}">Actualizar</a>
+                    <a href="{% url 'delete_task' task.id %}">Eliminar</a>
+                </div>
+            </div>
+            {% empty %}
+            <p>No hay tareas</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.dataset.id);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData("text");
+        const newPriority = event.target.closest('.quadrant').id;
+
+        fetch('/update-task-priority/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                new_priority: newPriority
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
+</body>
+</html>

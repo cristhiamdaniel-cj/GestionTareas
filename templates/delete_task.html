@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Eliminar Tarea</title>
+
+</head> 
+<body> 
+<h1>Eliminar Tarea</h1> 
+<p>¿Estás seguro que deseas eliminar la tarea: <strong>{{ task.title }}</strong>?</p> <form method="post"> {% csrf_token %} <button type="submit">Eliminar</button> </form> <a href="{% url 'matrix' %}">Cancelar</a> </body> </html>
