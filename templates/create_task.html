@@ -7,7 +7,18 @@
 </head>
 <body>
     <h1>Crear Tarea</h1>
-    <form method="post">
+
+    <!-- Mostrar errores de validación si los hay -->
+    {% if errors %}
+        <ul>
+            {% for error in errors.values %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- Formulario para crear una tarea -->
+    <form method="post" action="{% url 'create_task' %}">
         {% csrf_token %}
         <p>
             <label for="id_title">Título:</label>
@@ -19,7 +30,7 @@
         </p>
         <p>
             <label for="id_assigned_to">Asignado a:</label>
-            <input type="text" name="assigned_to" id="id_assigned_to">
+            {{ form.assigned_to }}
         </p>
         <p>
             <label for="id_area">Área:</label>
@@ -43,6 +54,8 @@
         </p>
         <button type="submit">Guardar</button>
     </form>
+
+    <!-- Enlace para regresar a la matriz -->
     <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
 </body>
 </html>

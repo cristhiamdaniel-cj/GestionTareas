@@ -7,7 +7,15 @@
 </head>
 <body>
     <h1>Iniciar Sesión</h1>
-    <form method="post">
+    <!-- Mostrar errores si existen -->
+    {% if errors %}
+        <ul>
+            {% for error in errors.values %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Iniciar Sesión</button>
