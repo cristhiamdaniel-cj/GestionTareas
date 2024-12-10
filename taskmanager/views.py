@@ -5,7 +5,9 @@ from django.utils.timezone import now
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def matrix_view(request):
     tasks = {
         'UI': Task.objects.filter(priority='UI'),
@@ -16,12 +18,19 @@ def matrix_view(request):
     return render(request, 'matrix.html', {'tasks': tasks})
 
 
+
 def create_task_view(request):
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
             task = form.save()
-            AuditLog.objects.create(user=request.user, action='create', task=task, timestamp=now())
+            AuditLog.objects.create(
+                user=request.user,
+                action='create',
+                task=task,
+                timestamp=now(),
+                description=f"Tarea creada: {task.title}"
+            )
             return redirect('matrix')
     else:
         form = TaskForm()
@@ -75,6 +84,9 @@ def delete_task_view(request, task_id):
 @csrf_exempt
 def update_task_priority(request):
     if request.method == "POST":
+        if not request.user.is_authenticated:
+            return JsonResponse({"status": "error", "message": "Usuario no autenticado"}, status=403)
+
         data = json.loads(request.body)
         task_id = data.get("task_id")
         new_priority = data.get("new_priority")
@@ -96,8 +108,6 @@ def update_task_priority(request):
             return JsonResponse({"status": "success", "message": "Prioridad actualizada"})
         except Task.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Tarea no encontrada"}, status=404)
-
-    return JsonResponse({"status": "error", "message": "Método de solicitud no válido"}, status=400)
 
 
 def audit_log_view(request):

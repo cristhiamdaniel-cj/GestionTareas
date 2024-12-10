@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-d8p#$j-v3wz39xm5x8bpiy7cf29d%83a$%yh=sm45$!g70y-lf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'matriz.ngrok.dev']
 
 
 # Application definition
@@ -55,8 +55,7 @@ ROOT_URLCONF = 'MatrizEisenhower.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,3 +122,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CSRF_TRUSTED_ORIGINS = ['https://matriz.ngrok.dev']
+
+LOGIN_REDIRECT_URL = '/'
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 0  # Las sesiones expiran inmediatamente después del cierre del navegador.
+SESSION_COOKIE_SECURE = True  # Requiere HTTPS para las cookies de sesión.
+

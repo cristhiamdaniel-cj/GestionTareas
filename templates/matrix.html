@@ -41,6 +41,8 @@
     <div class="controls">
         <a href="{% url 'create_task' %}">Agregar Tarea</a>
         <a href="{% url 'audit_log' %}">Auditoría</a>
+        <a href="{% url 'logout' %}">Cerrar sesión</a>
+
     </div>
     <div class="matrix">
         {% for key, quadrant in tasks.items %}
@@ -50,11 +52,11 @@
                 {% if key == "UI" %}
                 title="Urgente e Importante: Estas tareas deben ser realizadas de inmediato."
                 {% elif key == "NI" %}
-                title="No Urgente e Importante: Estas tareas son importantes pero pueden ser planificadas."
+                title="No Importante pero Urgente: Estas tareas son importantes pero pueden ser planificadas."
                 {% elif key == "IN" %}
-                title="Urgente y No Importante: Estas tareas deben delegarse."
+                title="Urgente pero No Importante: Estas tareas deben delegarse."
                 {% elif key == "NN" %}
-                title="No Urgente y No Importante: Estas tareas deben eliminarse o ignorarse."
+                title="No Importante ni Urgente: Estas tareas deben eliminarse o ignorarse."
                 {% endif %}
             >
                 {{ key }}
