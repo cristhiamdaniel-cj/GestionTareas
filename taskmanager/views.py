@@ -134,6 +134,24 @@ def update_task_priority(request):
         except Task.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Tarea no encontrada"}, status=404)
 
+# Vista para cambiar el estado de una tarea
+@login_required
+def mark_completed(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    if task.status == 'in_progress':
+        task.status = 'completed'
+    else:
+        task.status = 'in_progress'
+    task.save()
+    AuditLog.objects.create(
+        user=request.user,
+        action="update",
+        task=task,
+        timestamp=now(),
+        description=f"Tarea marcada como {task.get_status_display()}"
+    )
+    return redirect('matrix')
+
 # Vista para ver el registro de auditoría
 @login_required
 def audit_log_view(request):

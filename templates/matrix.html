@@ -31,6 +31,11 @@
             background: #ffffff;
             cursor: grab;
         }
+        .task.completed {
+            text-decoration: line-through;
+            color: gray;
+            background-color: #e0e0e0;
+        }
         .controls {
             margin: 20px;
         }
@@ -42,7 +47,6 @@
         <a href="{% url 'create_task' %}">Agregar Tarea</a>
         <a href="{% url 'audit_log' %}">Auditoría</a>
         <a href="{% url 'logout' %}">Cerrar sesión</a>
-
     </div>
     <div class="matrix">
         {% for key, quadrant in tasks.items %}
@@ -62,11 +66,18 @@
                 {{ key }}
             </h3>
             {% for task in quadrant %}
-            <div class="task" draggable="true" ondragstart="drag(event)" data-id="{{ task.id }}">
+            <div class="task {% if task.status == 'completed' %}completed{% endif %}" 
+                 draggable="true" ondragstart="drag(event)" data-id="{{ task.id }}">
                 <strong>{{ task.title }}</strong>
                 <div>
                     <a href="{% url 'update_task' task.id %}">Actualizar</a>
                     <a href="{% url 'delete_task' task.id %}">Eliminar</a>
+                    <form method="post" action="{% url 'mark_completed' task.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit">
+                            {% if task.status == 'completed' %}Desmarcar{% else %}Completar{% endif %}
+                        </button>
+                    </form>
                 </div>
             </div>
             {% empty %}
