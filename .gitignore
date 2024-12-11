@@ -11,3 +11,7 @@ db.sqlite3
 
 # Ignorar migraciones compiladas
 */migrations/*.pyc
+
+
+# Ignorar migraciones compiladas
+taskmanager/migrations/__pycache__/
