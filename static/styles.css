@@ -1,0 +1,110 @@
+    
+/* Fondo general */
+body {
+    background-image: url('../static/alcaldia.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: #333;
+}
+
+/* Tarjetas */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Encabezado de la tarjeta */
+.card-header {
+    font-size: 1.25rem;
+    padding: 15px;
+    border-radius: 15px 15px 0 0;
+}
+
+/* Tareas */
+.task {
+    border: 1px solid #e9ecef;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.task:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+/* Fondo translúcido */
+.bg-opacity-75 {
+    background-color: rgba(255, 255, 255, 0.75) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* Sombra suave */
+.shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Relleno y bordes */
+.p-4 {
+    padding: 1.5rem !important;
+}
+
+.rounded {
+    border-radius: 15px !important;
+}
+
+/* Pie de matriz */
+.text-center {
+    color: #333;
+    font-size: 0.9rem;
+}
+/* Ajustes en el header */
+header {
+    background-color: #e21131 !important;
+    border-bottom: 3px solid #c0002b; /* Línea más oscura para profundidad */
+    padding: 10px 0;
+}
+
+header h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+header .nav {
+    margin-left: 20px;
+}
+
+header .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+header .nav-link:hover {
+    color: #ffd700; /* Efecto hover en amarillo dorado */
+}
+
+header img {
+    border: 2px solid white;
+    padding: 3px;
+}
+
+
+.card {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-primary {
+    background-color: #d9534f;
+    border-color: #d9534f;
+}
+.btn-primary:hover {
+    background-color: #c9302c;
+    border-color: #ac2925;
+}
