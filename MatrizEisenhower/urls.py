@@ -4,6 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
 from taskmanager import views as task_views  # Importa las vistas de taskmanager
 
+from django.contrib import admin
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),

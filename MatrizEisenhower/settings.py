@@ -1,4 +1,5 @@
-from pathlib import Path
+from pathlib import Path 
+import os 
 
 # Rutas del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,7 +76,10 @@ USE_I18N = True
 USE_TZ = True
 
 # Archivos estáticos
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Configuración por defecto de claves primarias
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

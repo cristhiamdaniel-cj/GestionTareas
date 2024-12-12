@@ -25,11 +25,15 @@ class Task(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField()
     priority = models.CharField(max_length=2, choices=PRIORITY_CHOICES)
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='in_progress'
+    
     )
+
+    
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"

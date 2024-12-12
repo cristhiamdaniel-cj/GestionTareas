@@ -1,61 +1,102 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Tarea</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href='{% static "styles.css" %}'>
 </head>
 <body>
-    <h1>Crear Tarea</h1>
+    <header class="p-3 border-bottom" style="background-color: #e21131;">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center">
+                <!-- Logo e imagen -->
+                <div class="d-flex align-items-center me-auto">
+                    <img src="{% static 'matriz.jpg' %}" alt="Matriz" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
+                    <h2 class="text-white mb-0">Matriz de Eisenhower</h2>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container mt-5">
+        <div class="card p-4">
+            <h1 class="text-center mb-4">Crear Tarea</h1>
 
-    <!-- Mostrar errores de validación si los hay -->
-    {% if errors %}
-        <ul>
-            {% for error in errors.values %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+            <!-- Mostrar errores de validación si los hay -->
+            {% if errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for error in errors.values %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
-    <!-- Formulario para crear una tarea -->
-    <form method="post" action="{% url 'create_task' %}">
-        {% csrf_token %}
-        <p>
-            <label for="id_title">Título:</label>
-            {{ form.title }}
-        </p>
-        <p>
-            <label for="id_description">Descripción:</label>
-            {{ form.description }}
-        </p>
-        <p>
-            <label for="id_assigned_to">Asignado a:</label>
-            {{ form.assigned_to }}
-        </p>
-        <p>
-            <label for="id_area">Área:</label>
-            {{ form.area }}
-        </p>
-        <p>
-            <label for="id_subgroup">Subgrupo:</label>
-            {{ form.subgroup }}
-        </p>
-        <p>
-            <label for="id_role">Rol:</label>
-            {{ form.role }}
-        </p>
-        <p>
-            <label for="id_due_date">Fecha de Vencimiento:</label>
-            {{ form.due_date }}
-        </p>
-        <p>
-            <label for="id_priority">Prioridad:</label>
-            {{ form.priority }}
-        </p>
-        <button type="submit">Guardar</button>
-    </form>
+            <!-- Formulario para crear una tarea -->
+            <form method="post" action="{% url 'create_task' %}">
+                {% csrf_token %}
 
-    <!-- Enlace para regresar a la matriz -->
-    <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_title" class="form-label">Título</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_assigned_to" class="form-label">Asignado a</label>
+                        {{ form.assigned_to }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_area" class="form-label">Área</label>
+                        {{ form.area }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_subgroup" class="form-label">Subgrupo</label>
+                        {{ form.subgroup }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_role" class="form-label">Rol</label>
+                        {{ form.role }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_due_date" class="form-label">Fecha de Vencimiento</label>
+                        {{ form.due_date }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_priority" class="form-label">Prioridad</label>
+                        {{ form.priority }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_description" class="form-label">Descripción</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+
+            <!-- Enlace para regresar a la matriz -->
+            <div class="text-center mt-3">
+                <a href="{% url 'matrix' %}" class="btn btn-secondary">Regresar a la Matriz</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

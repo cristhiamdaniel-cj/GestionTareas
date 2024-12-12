@@ -10,7 +10,15 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = [
-            'title', 'description', 'assigned_to', 'area', 'subgroup', 
-            'role', 'due_date', 'priority', 'status'
-        ]
+        fields = '__all__'
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'assigned_to': forms.TextInput(attrs={'class': 'form-control'}),
+            'area': forms.TextInput(attrs={'class': 'form-control'}),
+            'subgroup': forms.TextInput(attrs={'class': 'form-control'}),
+            'role': forms.TextInput(attrs={'class': 'form-control'}),
+            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'priority': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+        }
