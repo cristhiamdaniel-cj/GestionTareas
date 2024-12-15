@@ -186,10 +186,29 @@ def update_task_priority(request):
 def mark_completed(request, task_id):
     print(f"==> Entrando a mark_completed - Usuario: {request.user.username} - Tarea ID: {task_id}")
     task = get_object_or_404(Task, id=task_id)
+    old_status = task.status  # Estado anterior
+    
+    # Cambiar estado de la tarea
     task.status = 'completed' if task.status == 'in_progress' else 'in_progress'
     task.save()
+    new_status = task.status  # Nuevo estado
     print(f"Estado de la tarea {task.title} cambiado a: {task.get_status_display()}")
+
+    # Registrar en la auditoría
+    try:
+        audit_log = AuditLog.objects.create(
+            user=request.user,
+            action="update",
+            task=task,
+            timestamp=now(),
+            description=f"Estado cambiado de '{old_status}' → '{new_status}'"
+        )
+        print(f"Registro de auditoría creado: {audit_log}")
+    except Exception as e:
+        print(f"Error al crear el registro de auditoría: {e}")
+
     return redirect('matrix')
+
 
 # Vista para ver el registro de auditoría
 @login_required
