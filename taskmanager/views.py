@@ -11,7 +11,12 @@ from .forms import TaskForm
 import json
 from django.db import transaction  # Importar transaction
 from .forms import SolutionForm  # Importar el formulario
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.shortcuts import redirect
 
+# Función que verifica si el usuario es superusuario
+def is_superuser(user):
+    return user.is_superuser
 
 # Vista de inicio de sesión
 def login_view(request):
@@ -122,6 +127,7 @@ def update_task_view(request, task_id):
 
 # Vista para eliminar una tarea
 @login_required
+@user_passes_test(is_superuser)
 def delete_task_view(request, task_id):
     print(f"==> Entrando a delete_task_view - Usuario: {request.user.username} - Tarea ID: {task_id}")
     task = get_object_or_404(Task, id=task_id)
@@ -226,6 +232,7 @@ def mark_completed(request, task_id):
 
 # Vista para ver el registro de auditoría
 @login_required
+@user_passes_test(is_superuser)
 def audit_log_view(request):
     print(f"==> Entrando a audit_log_view - Usuario: {request.user.username}")
     if request.user.username != 'danielcampos':

@@ -22,6 +22,7 @@
         .quadrant h3 {
             margin: 0;
             text-align: center;
+            font-weight: bold;
         }
         .task {
             padding: 5px;
@@ -55,7 +56,9 @@
     <!-- Controles -->
     <div class="controls">
         <a href="{% url 'create_task' %}">Agregar Tarea</a>
-        <a href="{% url 'audit_log' %}">Auditoría</a>
+        {% if user.is_superuser %}
+            <a href="{% url 'audit_log' %}">Auditoría</a>
+        {% endif %}
         <a href="{% url 'logout' %}">Cerrar sesión</a>
     </div>
 
@@ -63,19 +66,17 @@
     <div class="matrix">
         {% for key, quadrant in tasks.items %}
         <div class="quadrant" id="{{ key }}" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <!-- Descripciones emergentes para las siglas -->
-            <h3 
+            <!-- Títulos descriptivos -->
+            <h3>
                 {% if key == "UI" %}
-                title="Urgente e Importante: Estas tareas deben ser realizadas de inmediato."
+                    Importante y Urgente
                 {% elif key == "NI" %}
-                title="No Importante pero Urgente: Estas tareas son importantes pero pueden ser planificadas."
+                    No Importante pero Urgente
                 {% elif key == "IN" %}
-                title="Importante pero No Urgente: Estas tareas deben delegarse."
+                    Importante pero No Urgente
                 {% elif key == "NN" %}
-                title="No Importante ni Urgente: Estas tareas deben eliminarse o ignorarse."
+                    No Importante ni Urgente
                 {% endif %}
-            >
-                {{ key }}
             </h3>
             <!-- Lista de tareas -->
             {% for task in quadrant %}
@@ -84,17 +85,20 @@
                 <strong>{{ task.title }}</strong>
                 <div>
                     <a href="{% url 'update_task' task.id %}">Actualizar</a>
-                    <a href="{% url 'delete_task' task.id %}">Eliminar</a>
-                    <!-- Redirige a 'mark_completed' donde se pide la solución -->
-                    <a href="{% url 'mark_completed' task.id %}">
-                        <button type="button">
+                    {% if user.is_superuser %}
+                        <a href="{% url 'delete_task' task.id %}">Eliminar</a>
+                    {% endif %}
+                    <!-- Botón para completar o desmarcar tarea -->
+                    <form method="post" action="{% url 'mark_completed' task.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit">
                             {% if task.status == 'completed' %}
                                 Desmarcar
                             {% else %}
                                 Completar
                             {% endif %}
                         </button>
-                    </a>
+                    </form>
                 </div>
             </div>
             {% empty %}
