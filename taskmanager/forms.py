@@ -28,13 +28,10 @@ class TaskForm(forms.ModelForm):
             'priority': forms.Select(),
         }
 
-    # Validación para el campo 'title'
+    # Validación para título único
     def clean_title(self):
         title = self.cleaned_data.get('title')
-        instance = self.instance  # Obtener la instancia actual (si existe)
-
-        # Verificar si ya existe un título duplicado (ignorar la misma instancia en actualizaciones)
-        if Task.objects.filter(title=title).exclude(pk=instance.pk).exists():
+        if Task.objects.filter(title=title).exists():
             raise forms.ValidationError("Ya existe una tarea con este título. Elige otro título.")
         return title
 
@@ -51,6 +48,14 @@ class TaskForm(forms.ModelForm):
         elif custom:
             cleaned_data['assigned_to'] = custom
         else:
-            cleaned_data['assigned_to'] = "Sin asignar"  # Valor por defecto si no se selecciona nada
+            self.add_error('assigned_to_predefined', 'Debes seleccionar o proporcionar un nombre.')
 
         return cleaned_data
+
+# Nuevo formulario para la solución
+class SolutionForm(forms.Form):
+    solution = forms.CharField(
+        label="Solución de la Tarea",
+        widget=forms.Textarea(attrs={'placeholder': 'Describe la solución de la tarea aquí...', 'rows': 4, 'cols': 50}),
+        required=True
+    )

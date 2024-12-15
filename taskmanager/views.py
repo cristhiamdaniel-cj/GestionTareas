@@ -10,6 +10,7 @@ from .models import Task, AuditLog
 from .forms import TaskForm
 import json
 from django.db import transaction  # Importar transaction
+from .forms import SolutionForm  # Importar el formulario
 
 
 # Vista de inicio de sesión
@@ -193,27 +194,34 @@ def mark_completed(request, task_id):
     print(f"==> Entrando a mark_completed - Usuario: {request.user.username} - Tarea ID: {task_id}")
     task = get_object_or_404(Task, id=task_id)
     old_status = task.status  # Estado anterior
-    
-    # Cambiar estado de la tarea
-    task.status = 'completed' if task.status == 'in_progress' else 'in_progress'
-    task.save()
-    new_status = task.status  # Nuevo estado
-    print(f"Estado de la tarea {task.title} cambiado a: {task.get_status_display()}")
 
-    # Registrar en la auditoría
-    try:
-        audit_log = AuditLog.objects.create(
-            user=request.user,
-            action="update",
-            task=task,
-            timestamp=now(),
-            description=f"Estado cambiado de '{old_status}' → '{new_status}'"
-        )
-        print(f"Registro de auditoría creado: {audit_log}")
-    except Exception as e:
-        print(f"Error al crear el registro de auditoría: {e}")
+    if request.method == "POST":
+        form = SolutionForm(request.POST)
+        if form.is_valid():
+            solution = form.cleaned_data['solution']
 
-    return redirect('matrix')
+            # Cambiar el estado de la tarea a 'completed'
+            task.status = 'completed' if task.status == 'in_progress' else 'in_progress'
+            task.description += f"\n\nSolución: {solution}"  # Agregar solución a la descripción
+            task.save()
+            new_status = task.status  # Nuevo estado
+
+            # Registrar en la auditoría
+            description = f"Estado cambiado de '{old_status}' → '{new_status}'. Solución: {solution}"
+            AuditLog.objects.create(
+                user=request.user,
+                action="update",
+                task=task,
+                timestamp=now(),
+                description=description
+            )
+            print(f"Tarea {task.title} marcada como completada con solución: {solution}")
+            return redirect('matrix')
+    else:
+        form = SolutionForm()
+
+    return render(request, 'mark_completed.html', {'form': form, 'task': task})
+
 
 
 # Vista para ver el registro de auditoría

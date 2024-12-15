@@ -39,15 +39,27 @@
         .controls {
             margin: 20px;
         }
+        .controls a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: blue;
+        }
+        .controls a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <h1>Matriz de Eisenhower</h1>
+    
+    <!-- Controles -->
     <div class="controls">
         <a href="{% url 'create_task' %}">Agregar Tarea</a>
         <a href="{% url 'audit_log' %}">Auditoría</a>
         <a href="{% url 'logout' %}">Cerrar sesión</a>
     </div>
+
+    <!-- Matriz con cuadrantes -->
     <div class="matrix">
         {% for key, quadrant in tasks.items %}
         <div class="quadrant" id="{{ key }}" ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -58,13 +70,14 @@
                 {% elif key == "NI" %}
                 title="No Importante pero Urgente: Estas tareas son importantes pero pueden ser planificadas."
                 {% elif key == "IN" %}
-                title="Urgente pero No Importante: Estas tareas deben delegarse."
+                title="Importante pero No Urgente: Estas tareas deben delegarse."
                 {% elif key == "NN" %}
                 title="No Importante ni Urgente: Estas tareas deben eliminarse o ignorarse."
                 {% endif %}
             >
                 {{ key }}
             </h3>
+            <!-- Lista de tareas -->
             {% for task in quadrant %}
             <div class="task {% if task.status == 'completed' %}completed{% endif %}" 
                  draggable="true" ondragstart="drag(event)" data-id="{{ task.id }}">
@@ -72,12 +85,16 @@
                 <div>
                     <a href="{% url 'update_task' task.id %}">Actualizar</a>
                     <a href="{% url 'delete_task' task.id %}">Eliminar</a>
-                    <form method="post" action="{% url 'mark_completed' task.id %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit">
-                            {% if task.status == 'completed' %}Desmarcar{% else %}Completar{% endif %}
+                    <!-- Redirige a 'mark_completed' donde se pide la solución -->
+                    <a href="{% url 'mark_completed' task.id %}">
+                        <button type="button">
+                            {% if task.status == 'completed' %}
+                                Desmarcar
+                            {% else %}
+                                Completar
+                            {% endif %}
                         </button>
-                    </form>
+                    </a>
                 </div>
             </div>
             {% empty %}
@@ -87,20 +104,21 @@
         {% endfor %}
     </div>
 
-    <<script>
+    <!-- Scripts para arrastrar y soltar tareas -->
+    <script>
         function allowDrop(event) {
             event.preventDefault();
         }
-    
+
         function drag(event) {
             event.dataTransfer.setData("text", event.target.dataset.id);
         }
-    
+
         function drop(event) {
             event.preventDefault();
             const taskId = event.dataTransfer.getData("text");  // ID de la tarea
             const newPriority = event.target.closest('.quadrant').id;  // ID del cuadrante (nueva prioridad)
-    
+
             fetch("{% url 'update_task_priority' %}", {  // Vista en el servidor
                 method: 'POST',
                 headers: {
@@ -122,7 +140,7 @@
             })
             .catch(error => console.error("Error al actualizar prioridad:", error));
         }
-    
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -138,7 +156,5 @@
             return cookieValue;
         }
     </script>
-    
-    
 </body>
 </html>

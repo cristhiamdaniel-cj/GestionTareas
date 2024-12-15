@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completar Tarea</title>
+    <style>
+        .errorlist {
+            color: red;
+            list-style-type: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Marcar Tarea como Completada</h1>
+    <h2>Tarea: {{ task.title }}</h2>
+    <p><strong>Descripción:</strong> {{ task.description }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar y Completar</button>
+    </form>
+
+    <a href="{% url 'matrix' %}">Cancelar y Regresar a la Matriz</a>
+</body>
+</html>

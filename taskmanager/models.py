@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from django.db import models
 
+# models.py
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ('UI', 'Urgente e Importante'),
@@ -19,9 +20,6 @@ class Task(models.Model):
     title = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     assigned_to = models.CharField(max_length=100)
-    area = models.CharField(max_length=100)
-    subgroup = models.CharField(max_length=100)
-    role = models.CharField(max_length=100)
     start_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField()
     priority = models.CharField(max_length=2, choices=PRIORITY_CHOICES)
@@ -30,9 +28,11 @@ class Task(models.Model):
         choices=STATUS_CHOICES,
         default='in_progress'
     )
+    solution = models.TextField(blank=True, null=True)  # Campo para la solución
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+
 
 
 class AuditLog(models.Model):
