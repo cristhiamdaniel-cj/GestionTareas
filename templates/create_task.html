@@ -6,6 +6,20 @@
     <title>Crear Tarea</title>
     <style>
         .hidden { display: none; }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .errorlist {
+            color: red;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .field-container {
+            margin-bottom: 10px;
+        }
     </style>
     <script>
         function toggleCustomField() {
@@ -23,41 +37,99 @@
 </head>
 <body>
     <h1>Crear Tarea</h1>
+
+    {% if form.non_field_errors %}
+        <div class="error-message">
+            <h3>Errores Generales:</h3>
+            <ul>
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
-        <label for="{{ form.title.id_for_label }}">Título:</label>
-        {{ form.title }}
-        <br>
-    
-        <label for="{{ form.description.id_for_label }}">Descripción:</label>
-        {{ form.description }}
-        <br>
-    
-        <label for="{{ form.assigned_to_predefined.id_for_label }}">Asignado a:</label>
-        {{ form.assigned_to_predefined }}
-        <br>
-    
-        <div id="custom_assigned_to" class="hidden">
+        
+        <div class="field-container">
+            <label for="{{ form.title.id_for_label }}">Título:</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <ul class="errorlist">
+                    {% for error in form.title.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="field-container">
+            <label for="{{ form.description.id_for_label }}">Descripción:</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <ul class="errorlist">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="field-container">
+            <label for="{{ form.assigned_to_predefined.id_for_label }}">Asignado a:</label>
+            {{ form.assigned_to_predefined }}
+            {% if form.assigned_to_predefined.errors %}
+                <ul class="errorlist">
+                    {% for error in form.assigned_to_predefined.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div id="custom_assigned_to" class="field-container hidden">
             <label for="{{ form.assigned_to_custom.id_for_label }}">Nombre Personalizado:</label>
             {{ form.assigned_to_custom }}
+            {% if form.assigned_to_custom.errors %}
+                <ul class="errorlist">
+                    {% for error in form.assigned_to_custom.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
-        <br>
-    
-        <label for="{{ form.due_date.id_for_label }}">Fecha de Vencimiento:</label>
-        {{ form.due_date }}
-        <br>
-    
-        <label for="{{ form.priority.id_for_label }}">Prioridad:</label>
-        {{ form.priority }}
-        <br>
-    
+        
+        <div class="field-container">
+            <label for="{{ form.due_date.id_for_label }}">Fecha de Vencimiento:</label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}
+                <ul class="errorlist">
+                    {% for error in form.due_date.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="field-container">
+            <label for="{{ form.priority.id_for_label }}">Prioridad:</label>
+            {{ form.priority }}
+            {% if form.priority.errors %}
+                <ul class="errorlist">
+                    {% for error in form.priority.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
         <button type="submit">Guardar</button>
     </form>
     
     <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
 
     <script>
-        // Evento que se dispara cuando cambia el desplegable
         document.getElementById("id_assigned_to_predefined").addEventListener("change", toggleCustomField);
     </script>
 </body>

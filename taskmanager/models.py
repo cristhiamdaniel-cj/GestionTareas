@@ -16,7 +16,7 @@ class Task(models.Model):
         ('in_progress', 'En Proceso'),
     ]
 
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     assigned_to = models.CharField(max_length=100)
     area = models.CharField(max_length=100)

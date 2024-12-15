@@ -6,6 +6,7 @@ class TaskForm(forms.ModelForm):
         ('Daniela Mazuera', 'Daniela Mazuera'),
         ('Sofia Puerto', 'Sofia Puerto'),
         ('Otros', 'Otros'),
+        ('Sin asignar', 'Sin asignar'),
     ]
 
     assigned_to_predefined = forms.ChoiceField(
@@ -27,6 +28,17 @@ class TaskForm(forms.ModelForm):
             'priority': forms.Select(),
         }
 
+    # Validación para el campo 'title'
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        instance = self.instance  # Obtener la instancia actual (si existe)
+
+        # Verificar si ya existe un título duplicado (ignorar la misma instancia en actualizaciones)
+        if Task.objects.filter(title=title).exclude(pk=instance.pk).exists():
+            raise forms.ValidationError("Ya existe una tarea con este título. Elige otro título.")
+        return title
+
+    # Validación de asignado a
     def clean(self):
         cleaned_data = super().clean()
         predefined = cleaned_data.get('assigned_to_predefined')
@@ -39,6 +51,6 @@ class TaskForm(forms.ModelForm):
         elif custom:
             cleaned_data['assigned_to'] = custom
         else:
-            self.add_error('assigned_to_predefined', 'Debes seleccionar o proporcionar un nombre.')
+            cleaned_data['assigned_to'] = "Sin asignar"  # Valor por defecto si no se selecciona nada
 
         return cleaned_data
