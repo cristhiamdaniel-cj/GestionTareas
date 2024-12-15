@@ -46,4 +46,7 @@ class AuditLog(models.Model):
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    description = models.TextField(blank=True, null=True)  # Campo para descripciones opcionales
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} - {self.timestamp}"

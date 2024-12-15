@@ -9,6 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Task, AuditLog
 from .forms import TaskForm
 import json
+from django.db import transaction  # Importar transaction
+
 
 # Vista de inicio de sesión
 def login_view(request):
@@ -79,18 +81,37 @@ def update_task_view(request, task_id):
     print(f"==> Entrando a update_task_view - Usuario: {request.user.username} - Tarea ID: {task_id}")
     task = get_object_or_404(Task, id=task_id)
     print(f"Tarea encontrada: {task}")
+
+    old_values = {field.name: getattr(task, field.name) for field in task._meta.fields}  # Capturar valores antiguos
+
     if request.method == 'POST':
         print("Datos recibidos en POST:", request.POST)
         form = TaskForm(request.POST, instance=task)
         print("Errores del formulario antes de validar:", form.errors)
+
         if form.is_valid():
             form.save()
+            changes = [
+                f"{field}: '{old_value}' → '{getattr(task, field)}'"
+                for field, old_value in old_values.items()
+                if old_value != getattr(task, field)
+            ]
             print(f"Tarea actualizada: {task}")
+            # Registrar los cambios en la auditoría
+            AuditLog.objects.create(
+                user=request.user,
+                action="update",
+                task=task,
+                timestamp=now(),
+                description=f"Tarea actualizada: {', '.join(changes)}" if changes else "No se realizaron cambios"
+            )
+            return redirect('matrix')
         else:
             print("Errores del formulario después de validar:", form.errors)
     else:
         form = TaskForm(instance=task)
     return render(request, 'update_task.html', {'form': form, 'task': task})
+
 
 # Vista para eliminar una tarea
 @login_required
@@ -98,11 +119,22 @@ def delete_task_view(request, task_id):
     print(f"==> Entrando a delete_task_view - Usuario: {request.user.username} - Tarea ID: {task_id}")
     task = get_object_or_404(Task, id=task_id)
     print(f"Tarea encontrada para eliminar: {task}")
+
     if request.method == 'POST':
+        # Registrar en la auditoría antes de eliminar
+        AuditLog.objects.create(
+            user=request.user,
+            action="delete",
+            task=task,
+            timestamp=now(),
+            description=f"Tarea eliminada: {task.title}"
+        )
         task.delete()
         print(f"Tarea eliminada: {task.title}")
         return redirect('matrix')
+
     return render(request, 'delete_task.html', {'task': task})
+
 
 # Vista para actualizar la prioridad de una tarea (arrastrar y soltar)
 @csrf_exempt
@@ -110,20 +142,44 @@ def delete_task_view(request, task_id):
 def update_task_priority(request):
     print(f"==> Entrando a update_task_priority - Usuario: {request.user.username}")
     if request.method == "POST":
-        data = json.loads(request.body)
-        print("Datos recibidos en JSON:", data)
-        task_id = data.get("task_id")
-        new_priority = data.get("new_priority")
         try:
-            task = Task.objects.get(id=task_id)
-            print(f"Tarea encontrada: {task}")
-            task.priority = new_priority
-            task.save()
-            print(f"Prioridad actualizada para la tarea {task.title}: {new_priority}")
-            return JsonResponse({"status": "success", "message": "Prioridad actualizada"})
-        except Task.DoesNotExist:
-            print("Error: Tarea no encontrada")
-            return JsonResponse({"status": "error", "message": "Tarea no encontrada"}, status=404)
+            # Iniciar una transacción para mayor seguridad
+            with transaction.atomic():
+                data = json.loads(request.body)
+                print("Datos recibidos en JSON:", data)
+
+                task_id = data.get("task_id")
+                new_priority = data.get("new_priority")
+
+                if not task_id or not new_priority:
+                    return JsonResponse({"status": "error", "message": "Datos incompletos"}, status=400)
+
+                task = get_object_or_404(Task, id=task_id)
+                old_priority = task.priority
+
+                # Verificar si la prioridad realmente cambió
+                if old_priority != new_priority:
+                    task.priority = new_priority
+                    task.save()
+
+                    # Registrar el cambio en AuditLog
+                    AuditLog.objects.create(
+                        user=request.user,
+                        action="update",
+                        task=task,
+                        timestamp=now(),
+                        description=f"Prioridad actualizada de '{old_priority}' → '{new_priority}'"
+                    )
+                    print(f"Registro de auditoría creado para la tarea {task.title}")
+
+                return JsonResponse({"status": "success", "message": "Prioridad actualizada"})
+
+        except Exception as e:
+            print(f"Error inesperado: {e}")
+            return JsonResponse({"status": "error", "message": "Error interno del servidor"}, status=500)
+
+    return JsonResponse({"status": "error", "message": "Método no permitido"}, status=405)
+
 
 # Vista para cambiar el estado de una tarea
 @login_required
