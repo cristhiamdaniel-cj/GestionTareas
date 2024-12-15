@@ -4,60 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Tarea</title>
+    <style>
+        .hidden { display: none; }
+    </style>
+    <script>
+        function toggleCustomField() {
+            const predefined = document.getElementById("id_assigned_to_predefined");
+            const customField = document.getElementById("custom_assigned_to");
+
+            if (predefined.value === "Otros") {
+                customField.classList.remove("hidden");
+            } else {
+                customField.classList.add("hidden");
+                document.getElementById("id_assigned_to_custom").value = "";
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Crear Tarea</h1>
-
-    <!-- Mostrar errores de validación si los hay -->
-    {% if errors %}
-        <ul>
-            {% for error in errors.values %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    <!-- Formulario para crear una tarea -->
-    <form method="post" action="{% url 'create_task' %}">
+    <form method="post">
         {% csrf_token %}
-        <p>
-            <label for="id_title">Título:</label>
-            {{ form.title }}
-        </p>
-        <p>
-            <label for="id_description">Descripción:</label>
-            {{ form.description }}
-        </p>
-        <p>
-            <label for="id_assigned_to">Asignado a:</label>
-            {{ form.assigned_to }}
-        </p>
-        <p>
-            <label for="id_area">Área:</label>
-            {{ form.area }}
-        </p>
-        <p>
-            <label for="id_subgroup">Subgrupo:</label>
-            {{ form.subgroup }}
-        </p>
-        <p>
-            <label for="id_role">Rol:</label>
-            {{ form.role }}
-        </p>
-        <p>
-            <label for="id_due_date">Fecha de Vencimiento:</label>
-            {{ form.due_date }}
-        </p>
-        <p>
-            <label for="id_priority">Prioridad:</label>
-            {{ form.priority }}
-        </p>
-        <!-- Campo oculto para status -->
-        {{ form.status }}
+        <label for="{{ form.title.id_for_label }}">Título:</label>
+        {{ form.title }}
+        <br>
+    
+        <label for="{{ form.description.id_for_label }}">Descripción:</label>
+        {{ form.description }}
+        <br>
+    
+        <label for="{{ form.assigned_to_predefined.id_for_label }}">Asignado a:</label>
+        {{ form.assigned_to_predefined }}
+        <br>
+    
+        <div id="custom_assigned_to" class="hidden">
+            <label for="{{ form.assigned_to_custom.id_for_label }}">Nombre Personalizado:</label>
+            {{ form.assigned_to_custom }}
+        </div>
+        <br>
+    
+        <label for="{{ form.due_date.id_for_label }}">Fecha de Vencimiento:</label>
+        {{ form.due_date }}
+        <br>
+    
+        <label for="{{ form.priority.id_for_label }}">Prioridad:</label>
+        {{ form.priority }}
+        <br>
+    
         <button type="submit">Guardar</button>
     </form>
-
-    <!-- Enlace para regresar a la matriz -->
+    
     <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
+
+    <script>
+        // Evento que se dispara cuando cambia el desplegable
+        document.getElementById("id_assigned_to_predefined").addEventListener("change", toggleCustomField);
+    </script>
 </body>
 </html>

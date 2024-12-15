@@ -50,30 +50,33 @@ def matrix_view(request):
     print(f"Tareas cargadas: {tasks}")
     return render(request, 'matrix.html', {'tasks': tasks})
 
-# Vista para crear una tarea
 @login_required
 def create_task_view(request):
     print(f"==> Entrando a create_task_view - Usuario: {request.user.username}")
     if request.method == 'POST':
         print("Datos recibidos en POST:", request.POST)
         form = TaskForm(request.POST)
-        print("Errores del formulario antes de validar:", form.errors)
         if form.is_valid():
-            task = form.save()
+            task = form.save(commit=False)  # No guarda aún en la base de datos
+            task.assigned_to = form.cleaned_data['assigned_to']  # Asigna el valor correcto
+            task.save()
             print(f"Tarea creada: {task}")
+            # Crear un registro en la auditoría
             AuditLog.objects.create(
                 user=request.user,
                 action='create',
                 task=task,
                 timestamp=now(),
-                description=f"Tarea creada: {task.title}"
+                description=f"Tarea creada: {task.title}, Asignado a: {task.assigned_to}"
             )
             return redirect('matrix')
         else:
-            print("Errores del formulario después de validar:", form.errors)
+            print("Errores del formulario:", form.errors)
     else:
         form = TaskForm()
     return render(request, 'create_task.html', {'form': form})
+
+
 
 # Vista para actualizar una tarea
 @login_required
