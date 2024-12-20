@@ -24,8 +24,11 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = ['title', 'description', 'due_date', 'priority']
         widgets = {
-            'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'priority': forms.Select(),
+            'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'priority': forms.Select(attrs={'class': 'form-select'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'assigned_to_predefined': forms.Select(attrs={'class': 'form-select'}),
         }
 
     # Validación para título único
@@ -52,10 +55,16 @@ class TaskForm(forms.ModelForm):
 
         return cleaned_data
 
+
 # Nuevo formulario para la solución
 class SolutionForm(forms.Form):
     solution = forms.CharField(
         label="Solución de la Tarea",
-        widget=forms.Textarea(attrs={'placeholder': 'Describe la solución de la tarea aquí...', 'rows': 4, 'cols': 50}),
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Describe la solución de la tarea aquí...',
+            'rows': 4,
+            'cols': 50,
+            'class': 'form-control'
+        }),
         required=True
     )

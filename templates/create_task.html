@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Tarea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
     <style>
         .hidden { display: none; }
         .error-message {
@@ -17,8 +20,46 @@
             padding: 0;
             margin: 0;
         }
-        .field-container {
-            margin-bottom: 10px;
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        header {
+            background-color: #e21131;
+            color: white;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #e21131;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #c10d2a;
+        }
+        .custom-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 30px;
+        }
+        .custom-header img {
+            height: 50px;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
         }
     </style>
     <script>
@@ -36,99 +77,141 @@
     </script>
 </head>
 <body>
-    <h1>Crear Tarea</h1>
-
-    {% if form.non_field_errors %}
-        <div class="error-message">
-            <h3>Errores Generales:</h3>
-            <ul>
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-        
-        <div class="field-container">
-            <label for="{{ form.title.id_for_label }}">Título:</label>
-            {{ form.title }}
-            {% if form.title.errors %}
-                <ul class="errorlist">
-                    {% for error in form.title.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <div class="field-container">
-            <label for="{{ form.description.id_for_label }}">Descripción:</label>
-            {{ form.description }}
-            {% if form.description.errors %}
-                <ul class="errorlist">
-                    {% for error in form.description.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <div class="field-container">
-            <label for="{{ form.assigned_to_predefined.id_for_label }}">Asignado a:</label>
-            {{ form.assigned_to_predefined }}
-            {% if form.assigned_to_predefined.errors %}
-                <ul class="errorlist">
-                    {% for error in form.assigned_to_predefined.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <div id="custom_assigned_to" class="field-container hidden">
-            <label for="{{ form.assigned_to_custom.id_for_label }}">Nombre Personalizado:</label>
-            {{ form.assigned_to_custom }}
-            {% if form.assigned_to_custom.errors %}
-                <ul class="errorlist">
-                    {% for error in form.assigned_to_custom.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <div class="field-container">
-            <label for="{{ form.due_date.id_for_label }}">Fecha de Vencimiento:</label>
-            {{ form.due_date }}
-            {% if form.due_date.errors %}
-                <ul class="errorlist">
-                    {% for error in form.due_date.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        
-        <div class="field-container">
-            <label for="{{ form.priority.id_for_label }}">Prioridad:</label>
-            {{ form.priority }}
-            {% if form.priority.errors %}
-                <ul class="errorlist">
-                    {% for error in form.priority.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <button type="submit">Guardar</button>
-    </form>
+    <!-- Header -->
+    <header class="p-3 border-bottom" style="background-color: #e21131;">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center">
+                <!-- Logo e imagen -->
+                <div class="d-flex align-items-center me-auto">
+                    <img src="{% static 'matriz.jpg' %}" alt="Matriz" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px;">
+                    <h2 class="text-white mb-0">Matriz de Eisenhower</h2>
+                </div>
     
-    <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
+                <!-- Dropdown para cerrar sesión -->
+                <div class="dropdown text-end">
+                    <a href="#" class="d-block text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <span class="fw-bold">Opciones</span>
+                    </a>
+                    <ul class="dropdown-menu text-small">
+                        <li><!-- Dropdown para cerrar sesión -->
+                            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
 
+    <!-- Main Content -->
+    <div class="form-container">
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>Errores Generales:</strong>
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post">
+
+            <h1 class="text-center mb-2" style="font-size: 2rem; color: black;">Crear Tarea</h1>
+            {% csrf_token %}
+
+            <!-- Título -->
+            <div class="mb-3">
+                <label for="{{ form.title.id_for_label }}" class="form-label">Título:</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.title.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Descripción:</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.description.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Asignado a -->
+            <div class="mb-3">
+                <label for="{{ form.assigned_to_predefined.id_for_label }}" class="form-label">Asignado a:</label>
+                {{ form.assigned_to_predefined }}
+                {% if form.assigned_to_predefined.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.assigned_to_predefined.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Campo personalizado -->
+            <div id="custom_assigned_to" class="mb-3 hidden">
+                <label for="{{ form.assigned_to_custom.id_for_label }}" class="form-label">Nombre Personalizado:</label>
+                {{ form.assigned_to_custom }}
+                {% if form.assigned_to_custom.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.assigned_to_custom.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Fecha de Vencimiento -->
+            <div class="mb-3">
+                <label for="{{ form.due_date.id_for_label }}" class="form-label">Fecha de Vencimiento:</label>
+                {{ form.due_date }}
+                {% if form.due_date.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.due_date.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Prioridad -->
+            <div class="mb-3">
+                <label for="{{ form.priority.id_for_label }}" class="form-label">Prioridad:</label>
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.priority.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Botón de guardar -->
+            <div class="d-flex justify-content-center mt-4">
+                <button type="submit" class="btn btn-primary btn-lg me-2">Guardar</button>
+                <a href="{% url 'matrix' %}" class="btn btn-secondary btn-lg">Regresar a la Matriz</a>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById("id_assigned_to_predefined").addEventListener("change", toggleCustomField);
     </script>
