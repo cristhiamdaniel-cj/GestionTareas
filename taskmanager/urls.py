@@ -10,4 +10,6 @@ urlpatterns = [
     path('update-task-priority/', views.update_task_priority, name='update_task_priority'),
     path('mark-completed/<int:task_id>/', views.mark_completed, name='mark_completed'),
     path('audit-log/', views.audit_log_view, name='audit_log'),
+    path('reportes/', views.reportes_tareas, name='reportes'),  # Nueva URL para el reporte
+    path('gantt-vencidas/', views.gantt_tareas_vencidas, name='gantt_tareas_vencidas'),
 ]

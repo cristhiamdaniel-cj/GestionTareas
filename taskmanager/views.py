@@ -13,6 +13,55 @@ from django.db import transaction  # Importar transaction
 from .forms import SolutionForm  # Importar el formulario
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import redirect
+from django.shortcuts import render
+from django.utils import timezone
+
+
+def gantt_tareas_vencidas(request):
+    """
+    Vista que prepara datos de tareas vencidas para mostrar en un diagrama de Gantt.
+    """
+    tareas_vencidas = Task.objects.filter(due_date__lt=timezone.now(), status='in_progress')
+
+    # Crear un diccionario de datos con título y fechas
+    datos_tareas = [
+        {
+            'title': tarea.title,
+            'start_date': tarea.start_date.strftime('%Y-%m-%d'),
+            'due_date': tarea.due_date.strftime('%Y-%m-%d'),
+        }
+        for tarea in tareas_vencidas
+    ]
+
+    return render(request, 'gantt_tareas_vencidas.html', {'datos_tareas': datos_tareas})
+
+
+
+def reportes_tareas(request):
+    """
+    Vista para mostrar un reporte de tareas:
+    - Total de tareas
+    - Tareas completadas
+    - Tareas activas
+    - Tareas asignadas
+    - Tareas vencidas
+    """
+    total_tareas = Task.objects.count()
+    tareas_completadas = Task.objects.filter(status='completed').count()
+    tareas_activas = Task.objects.filter(status='in_progress').count()
+    tareas_asignadas = Task.objects.exclude(assigned_to='Sin asignar').count()
+    tareas_vencidas = Task.objects.filter(due_date__lt=timezone.now(), status='in_progress')
+
+    context = {
+        'total_tareas': total_tareas,
+        'tareas_completadas': tareas_completadas,
+        'tareas_activas': tareas_activas,
+        'tareas_asignadas': tareas_asignadas,
+        'tareas_vencidas': tareas_vencidas
+    }
+
+    return render(request, 'reportes.html', context)
+
 
 # Función que verifica si el usuario es superusuario
 def is_superuser(user):

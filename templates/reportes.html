@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Tareas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Tareas</h1>
+    
+    <ul>
+        <li><strong>Total de Tareas:</strong> {{ total_tareas }}</li>
+        <li><strong>Tareas Completadas:</strong> {{ tareas_completadas }}</li>
+        <li><strong>Tareas Activas:</strong> {{ tareas_activas }}</li>
+        <li><strong>Tareas Asignadas:</strong> {{ tareas_asignadas }}</li>
+    </ul>
+    
+    <h2>Tareas Vencidas</h2>
+    {% if tareas_vencidas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Asignado a</th>
+                <th>Fecha de Vencimiento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tarea in tareas_vencidas %}
+            <tr>
+                <td>{{ tarea.title }}</td>
+                <td>{{ tarea.assigned_to }}</td>
+                <td>{{ tarea.due_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay tareas vencidas.</p>
+    {% endif %}
+
+    <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
+</body>
+</html>

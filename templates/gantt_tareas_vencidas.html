@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Gantt - Tareas Vencidas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        canvas {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diagrama de Gantt - Tareas Vencidas</h1>
+    <canvas id="ganttChart"></canvas>
+    
+    <script>
+        const ctx = document.getElementById('ganttChart').getContext('2d');
+        
+        // Cargar datos de tareas desde Django
+        const tareas = {{ datos_tareas|safe }};
+        
+        // Extraer los datos de las tareas
+        const labels = tareas.map(tarea => tarea.title);
+        const startDates = tareas.map(tarea => new Date(tarea.start_date));
+        const dueDates = tareas.map(tarea => new Date(tarea.due_date));
+
+        // Calcular la duración de cada tarea (en días)
+        const durations = dueDates.map((due, index) => 
+            Math.ceil((due - startDates[index]) / (1000 * 60 * 60 * 24))
+        );
+
+        // Configurar la gráfica
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Duración en días',
+                    data: durations,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',  // Hace que las barras sean horizontales
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Tareas Vencidas - Mora de Cumplimiento'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Duración (días)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Tareas'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <a href="{% url 'matrix' %}">Regresar a la Matriz</a>
+</body>
+</html>
