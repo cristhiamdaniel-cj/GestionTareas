@@ -51,6 +51,11 @@ TEMPLATES = [
         },
     },
 ]
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Si tienes una carpeta static en la raíz del proyecto
+]
 
 # Configuración de la base de datos
 DATABASES = {
@@ -94,7 +99,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # Configuración de redirecciones de autenticación
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'  # Redirige a la matriz después del login
-LOGOUT_REDIRECT_URL = '/login/'  # Redirige al login después del logout
+LOGOUT_REDIRECT_URL = 'login'  # Redirige al login después del logout
 
 # Configuración de logs
 import logging
