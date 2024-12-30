@@ -15,6 +15,8 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.utils import timezone
+from django.db.models import Q
+
 
 
 def gantt_tareas_vencidas(request):
@@ -96,14 +98,32 @@ def custom_logout(request):
 @login_required
 def matrix_view(request):
     print(f"==> Entrando a matrix_view - Usuario: {request.user.username}")
+    
+    # Obtener el usuario asignado desde los parámetros GET
+    assigned_to_filter = request.GET.get('assigned_to', None)
+    print(f"Filtro de usuario asignado: {assigned_to_filter}")
+
+    # Construir el filtro dinámico
+    if assigned_to_filter == "Otros":
+        assigned_to_query = ~Q(assigned_to__in=[choice[0] for choice in TaskForm.ASSIGN_TO_CHOICES if choice[0]])
+    elif assigned_to_filter == "Sin asignar":
+        assigned_to_query = Q(assigned_to__isnull=True) | Q(assigned_to='')
+    elif assigned_to_filter:
+        assigned_to_query = Q(assigned_to=assigned_to_filter)
+    else:
+        assigned_to_query = Q()  # Sin filtro
+
+    # Filtrar tareas por prioridad y usuario asignado
     tasks = {
-        'UI': Task.objects.filter(priority='UI'),
-        'NI': Task.objects.filter(priority='NI'),
-        'IN': Task.objects.filter(priority='IN'),
-        'NN': Task.objects.filter(priority='NN'),
+        'UI': Task.objects.filter(priority='UI').filter(assigned_to_query),
+        'NI': Task.objects.filter(priority='NI').filter(assigned_to_query),
+        'IN': Task.objects.filter(priority='IN').filter(assigned_to_query),
+        'NN': Task.objects.filter(priority='NN').filter(assigned_to_query),
     }
-    print(f"Tareas cargadas: {tasks}")
-    return render(request, 'matrix.html', {'tasks': tasks})
+
+    print(f"Tareas cargadas después del filtro: {tasks}")
+    return render(request, 'matrix.html', {'tasks': tasks, 'assigned_to_filter': assigned_to_filter})
+
 
 # Vista para crear una tarea
 @login_required
