@@ -3,8 +3,11 @@ from .models import Task
 
 class TaskForm(forms.ModelForm):
     ASSIGN_TO_CHOICES = [
-        ('Daniela Mazuera', 'Daniela Mazuera'),
-        ('Sofia Puerto', 'Sofia Puerto'),
+        ('', '--- Seleccionar ---'),  # Opción en blanco por defecto
+        ('Daniela', 'Daniela'),
+        ('Sofia', 'Sofia'),
+        ('Karla', 'Karla'),
+        ('Daniel', 'Daniel'),
         ('Otros', 'Otros'),
         ('Sin asignar', 'Sin asignar'),
     ]
@@ -12,12 +15,13 @@ class TaskForm(forms.ModelForm):
     assigned_to_predefined = forms.ChoiceField(
         choices=ASSIGN_TO_CHOICES,
         required=False,
-        label="Asignado a"
+        label="Asignado a",
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     assigned_to_custom = forms.CharField(
         required=False,
         label="Nombre Personalizado",
-        widget=forms.TextInput(attrs={'placeholder': 'Escribe el nombre aquí'})
+        widget=forms.TextInput(attrs={'placeholder': 'Escribe el nombre aquí', 'class': 'form-control'})
     )
 
     class Meta:
@@ -28,17 +32,21 @@ class TaskForm(forms.ModelForm):
             'priority': forms.Select(attrs={'class': 'form-select'}),
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
-            'assigned_to_predefined': forms.Select(attrs={'class': 'form-select'}),
         }
 
-    # Validación para título único
+    def __init__(self, *args, **kwargs):
+        # Capturar la instancia actual para validar correctamente al actualizar
+        self.instance = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+
+    # Validación para título único (ignorar al actualizar)
     def clean_title(self):
         title = self.cleaned_data.get('title')
-        if Task.objects.filter(title=title).exists():
+        if Task.objects.filter(title=title).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("Ya existe una tarea con este título. Elige otro título.")
         return title
 
-    # Validación de asignado a
+    # Validación de los campos "Asignado a"
     def clean(self):
         cleaned_data = super().clean()
         predefined = cleaned_data.get('assigned_to_predefined')

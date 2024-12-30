@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <style>
-
         .form-container {
             background-color: rgba(255, 255, 255, 0.9);
             padding: 30px;
@@ -75,7 +74,86 @@
             <h1 class="text-center mb-2" style="font-size: 2rem; color: black;">Actualizar Tarea: {{ task.title }}</h1>
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
+
+                <!-- Título -->
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Título:</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.title.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Descripción:</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.description.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Asignado a -->
+                <div class="mb-3">
+                    <label for="{{ form.assigned_to_predefined.id_for_label }}" class="form-label">Asignado a:</label>
+                    {{ form.assigned_to_predefined }}
+                    {% if form.assigned_to_predefined.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.assigned_to_predefined.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Campo personalizado -->
+                <div id="custom_assigned_to" class="mb-3 hidden">
+                    <label for="{{ form.assigned_to_custom.id_for_label }}" class="form-label">Nombre Personalizado:</label>
+                    {{ form.assigned_to_custom }}
+                    {% if form.assigned_to_custom.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.assigned_to_custom.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Fecha de vencimiento -->
+                <div class="mb-3">
+                    <label for="{{ form.due_date.id_for_label }}" class="form-label">Fecha de Vencimiento:</label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.due_date.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Prioridad -->
+                <div class="mb-3">
+                    <label for="{{ form.priority.id_for_label }}" class="form-label">Prioridad:</label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.priority.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Botones -->
                 <div class="d-flex justify-content-center mt-4">
                     <button type="submit" class="btn btn-danger btn-lg me-2">Guardar cambios</button>
                     <a href="{% url 'matrix' %}" class="btn btn-secondary btn-lg">Regresar a la Matriz</a>
@@ -86,12 +164,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", function () {
             const predefinedField = document.getElementById("id_assigned_to_predefined");
-            if (predefinedField) {
-                predefinedField.addEventListener("change", toggleCustomField);
+            const customFieldWrapper = document.getElementById("custom_assigned_to");
+            const customField = document.getElementById("id_assigned_to_custom");
+    
+            function toggleCustomField() {
+                if (predefinedField.value === "Otros") {
+                    customFieldWrapper.classList.remove("hidden");
+                } else {
+                    customFieldWrapper.classList.add("hidden");
+                    customField.value = ""; // Limpiar el campo personalizado si no se selecciona "Otros"
+                }
             }
+    
+            // Inicializar el comportamiento del formulario
+            toggleCustomField();
+            predefinedField.addEventListener("change", toggleCustomField);
         });
     </script>
+    
 </body>
 </html>

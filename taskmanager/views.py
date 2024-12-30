@@ -140,25 +140,30 @@ def create_task_view(request):
 @login_required
 def update_task_view(request, task_id):
     print(f"==> Entrando a update_task_view - Usuario: {request.user.username} - Tarea ID: {task_id}")
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id)  # Obtener la tarea actual
     print(f"Tarea encontrada: {task}")
 
-    old_values = {field.name: getattr(task, field.name) for field in task._meta.fields}  # Capturar valores antiguos
+    old_values = {field.name: getattr(task, field.name) for field in task._meta.fields}  # Capturar valores antiguos para auditoría
 
     if request.method == 'POST':
         print("Datos recibidos en POST:", request.POST)
-        form = TaskForm(request.POST, instance=task)
+        form = TaskForm(request.POST, instance=task)  # Pasar la instancia de la tarea al formulario
         print("Errores del formulario antes de validar:", form.errors)
 
         if form.is_valid():
-            form.save()
+            updated_task = form.save(commit=False)  # Guardar sin commit
+            updated_task.assigned_to = form.cleaned_data.get('assigned_to')  # Asegurar el valor de 'assigned_to'
+            updated_task.save()  # Guardar cambios
+
+            # Identificar cambios realizados
             changes = [
                 f"{field}: '{old_value}' → '{getattr(task, field)}'"
                 for field, old_value in old_values.items()
                 if old_value != getattr(task, field)
             ]
             print(f"Tarea actualizada: {task}")
-            # Registrar los cambios en la auditoría
+
+            # Registrar cambios en el log de auditoría
             AuditLog.objects.create(
                 user=request.user,
                 action="update",
@@ -166,11 +171,16 @@ def update_task_view(request, task_id):
                 timestamp=now(),
                 description=f"Tarea actualizada: {', '.join(changes)}" if changes else "No se realizaron cambios"
             )
-            return redirect('matrix')
+            return redirect('matrix')  # Redirigir a la matriz de Eisenhower
         else:
             print("Errores del formulario después de validar:", form.errors)
     else:
-        form = TaskForm(instance=task)
+        # Inicializar el formulario con valores actuales
+        form = TaskForm(instance=task, initial={
+            'assigned_to_predefined': task.assigned_to if task.assigned_to in dict(TaskForm.ASSIGN_TO_CHOICES) else 'Otros',
+            'assigned_to_custom': '' if task.assigned_to in dict(TaskForm.ASSIGN_TO_CHOICES) else task.assigned_to,
+        })
+
     return render(request, 'update_task.html', {'form': form, 'task': task})
 
 
