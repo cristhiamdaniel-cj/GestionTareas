@@ -16,7 +16,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.utils import timezone
 from django.db.models import Q
-
+from collections import defaultdict
 
 
 def gantt_tareas_vencidas(request):
@@ -320,3 +320,70 @@ def audit_log_view(request):
     logs = AuditLog.objects.all()
     print(f"Registros de auditoría cargados: {logs}")
     return render(request, 'audit_log.html', {'logs': logs})
+
+
+def dashboard(request):
+    print(f"==> Entrando a dashboard - Usuario: {request.user.username}")
+
+    # Verificar que el usuario es el autorizado
+    if request.user.username != 'danielcampos':
+        print("Acceso denegado a la vista de auditoría")
+        return redirect('matrix')
+
+    # Obtener el valor del filtro (si existe)
+    assigned_to_filter = request.GET.get('assigned_to', '')
+
+    # Filtrar las tareas por el usuario asignado (si se especificó)
+    if assigned_to_filter:
+        tareas = Task.objects.filter(assigned_to=assigned_to_filter)
+    else:
+        tareas = Task.objects.all()
+
+    # Estadísticas generales de tareas
+    total_tareas = tareas.count()
+    tareas_completadas = tareas.filter(status='completed').count()
+    tareas_activas = tareas.filter(status='in_progress').count()
+    tareas_asignadas = tareas.exclude(assigned_to='Sin asignar').count()
+    tareas_vencidas = tareas.filter(due_date__lt=timezone.now(), status='in_progress').count()
+    tareas_pendientes = tareas.filter(status='in_progress', due_date__gte=timezone.now()).count()
+
+    # Calcular tareas por prioridad
+    tareas_prioridad = {
+        'urgente_e_importante': tareas.filter(priority='UI').count(),
+        'no_importante_pero_urgente': tareas.filter(priority='NI').count(),
+        'importante_pero_no_urgente': tareas.filter(priority='IN').count(),
+        'no_importante_ni_urgente': tareas.filter(priority='NN').count(),
+    }
+
+    # Opción B: Eficiencia penalizando tareas vencidas y bonificando tareas pendientes
+    if total_tareas > 0:
+        k = 1  # Factor de penalización, ajústalo según necesites
+        p = 0.5  # Factor de bonificación para tareas pendientes, ajústalo según necesites
+        
+        # Eficiencia sin penalizar
+        eficiencia_sin_penalizar = (tareas_completadas / total_tareas) * 100
+        
+        # Penalización por tareas vencidas
+        penalizacion = (tareas_vencidas / total_tareas) * 100 * k
+        
+        # Bonificación por tareas pendientes
+        bonificacion = (tareas_activas / total_tareas) * 100 * p
+        
+        # Promedio de eficiencia
+        promedio_eficiencia = eficiencia_sin_penalizar - penalizacion + bonificacion
+    else:
+        promedio_eficiencia = 0
+
+    # Pasar los datos al template
+    return render(request, 'dashboard.html', {
+        'assigned_to_filter': assigned_to_filter,
+        'tareas': tareas,
+        'total_tareas': total_tareas,
+        'tareas_completadas': tareas_completadas,
+        'tareas_activas': tareas_activas,
+        'tareas_asignadas': tareas_asignadas,
+        'tareas_vencidas': tareas_vencidas,
+        'tareas_pendientes': tareas_pendientes,
+        'tareas_prioridad': tareas_prioridad,
+        'promedio_eficiencia': promedio_eficiencia,
+    })
