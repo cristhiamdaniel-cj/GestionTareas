@@ -96,33 +96,52 @@ def custom_logout(request):
 
 # Vista de la matriz de Eisenhower
 @login_required
+
 def matrix_view(request):
     print(f"==> Entrando a matrix_view - Usuario: {request.user.username}")
     
-    # Obtener el usuario asignado desde los parámetros GET
+    # Obtener los filtros desde los parámetros GET
     assigned_to_filter = request.GET.get('assigned_to', None)
+    status_filter = request.GET.get('status', None)
     print(f"Filtro de usuario asignado: {assigned_to_filter}")
+    print(f"Filtro de estado: {status_filter}")
 
-    # Construir el filtro dinámico
+    # Construir el filtro dinámico para "Usuario Asignado"
+    assigned_to_query = Q()  # Sin filtro por defecto
     if assigned_to_filter == "Otros":
-        assigned_to_query = ~Q(assigned_to__in=[choice[0] for choice in TaskForm.ASSIGN_TO_CHOICES if choice[0]])
+        assigned_to_query = ~Q(assigned_to__in=[
+            choice[0] for choice in TaskForm.ASSIGN_TO_CHOICES if choice[0]
+        ])
     elif assigned_to_filter == "Sin asignar":
         assigned_to_query = Q(assigned_to__isnull=True) | Q(assigned_to='')
     elif assigned_to_filter:
         assigned_to_query = Q(assigned_to=assigned_to_filter)
-    else:
-        assigned_to_query = Q()  # Sin filtro
+    # Construir el filtro dinámico para "Estado"
+    status_query = Q()  # Sin filtro por defecto
+    if status_filter == "Otros":
+        status_query = ~Q(status__in=["Finalizados", "Pendientes"])  # Excluir estados predefinidos
+    elif status_filter:
+        status_query = Q(status=status_filter)
 
-    # Filtrar tareas por prioridad y usuario asignado
+    # Filtrar tareas combinando los filtros de "Usuario Asignado" y "Estado"
+    priorities = ['UI', 'NI', 'IN', 'NN']
     tasks = {
-        'UI': Task.objects.filter(priority='UI').filter(assigned_to_query),
-        'NI': Task.objects.filter(priority='NI').filter(assigned_to_query),
-        'IN': Task.objects.filter(priority='IN').filter(assigned_to_query),
-        'NN': Task.objects.filter(priority='NN').filter(assigned_to_query),
+        priority: Task.objects.filter(priority=priority).filter(assigned_to_query).filter(status_query)
+        for priority in priorities
     }
 
     print(f"Tareas cargadas después del filtro: {tasks}")
-    return render(request, 'matrix.html', {'tasks': tasks, 'assigned_to_filter': assigned_to_filter})
+    
+    # Renderizar la plantilla con las tareas y los filtros activos
+    return render(
+        request,
+        'matrix.html',
+        {
+            'tasks': tasks,
+            'assigned_to_filter': assigned_to_filter,
+            'status_filter': status_filter
+        }
+    )
 
 
 # Vista para crear una tarea

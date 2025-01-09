@@ -12,6 +12,14 @@ class TaskForm(forms.ModelForm):
         ('Sin asignar', 'Sin asignar'),
     ]
 
+    STATUS_CHOICES = [
+        ('', 'Todos'),
+        ('in_progress', 'in_progress'),
+        ('completed', 'completed'),
+        ('Otros', 'Otros'),
+    ]
+
+    # Campos de "Asignado a"
     assigned_to_predefined = forms.ChoiceField(
         choices=ASSIGN_TO_CHOICES,
         required=False,
@@ -22,6 +30,22 @@ class TaskForm(forms.ModelForm):
         required=False,
         label="Nombre Personalizado",
         widget=forms.TextInput(attrs={'placeholder': 'Escribe el nombre aquí', 'class': 'form-control'})
+    )
+
+    # Campos de "Estado"
+    status_predefined = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        required=False,
+        label="Estado Predefinido",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    status_custom = forms.CharField(
+        required=False,
+        label="Estado Personalizado",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Escribe un estado personalizado aquí',
+            'class': 'form-control'
+        })
     )
 
     class Meta:
@@ -39,29 +63,53 @@ class TaskForm(forms.ModelForm):
         self.instance = kwargs.get('instance')
         super().__init__(*args, **kwargs)
 
-    # Validación para título único (ignorar al actualizar)
     def clean_title(self):
         title = self.cleaned_data.get('title')
         if Task.objects.filter(title=title).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("Ya existe una tarea con este título. Elige otro título.")
         return title
 
-    # Validación de los campos "Asignado a"
-    def clean(self):
-        cleaned_data = super().clean()
-        predefined = cleaned_data.get('assigned_to_predefined')
-        custom = cleaned_data.get('assigned_to_custom')
+    def clean_assigned_to_predefined(self):
+        predefined = self.cleaned_data.get('assigned_to_predefined')
+        custom = self.cleaned_data.get('assigned_to_custom')
 
         if predefined == 'Otros' and not custom:
-            self.add_error('assigned_to_custom', 'Debes proporcionar un nombre si seleccionas "Otros".')
-        elif predefined and predefined != 'Otros':
+            raise forms.ValidationError('Si seleccionas "Otros", debes proporcionar un nombre personalizado.')
+        if not predefined and not custom:
+            raise forms.ValidationError('Debes seleccionar un usuario o proporcionar un nombre personalizado.')
+        return predefined
+
+    def clean_status_predefined(self):
+        status_predefined = self.cleaned_data.get('status_predefined')
+        status_custom = self.cleaned_data.get('status_custom')
+
+        if status_predefined == 'Otros' and not status_custom:
+            raise forms.ValidationError('Si seleccionas "Otros", debes proporcionar un estado personalizado.')
+        if not status_predefined and not status_custom:
+            raise forms.ValidationError('Debes seleccionar un estado predefinido o proporcionar uno personalizado.')
+        return status_predefined
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Asignar valores finales para "Asignado a"
+        predefined = cleaned_data.get('assigned_to_predefined')
+        custom = cleaned_data.get('assigned_to_custom')
+        if predefined and predefined != 'Otros':
             cleaned_data['assigned_to'] = predefined
         elif custom:
             cleaned_data['assigned_to'] = custom
-        else:
-            self.add_error('assigned_to_predefined', 'Debes seleccionar o proporcionar un nombre.')
+
+        # Asignar valores finales para "Estado"
+        status_predefined = cleaned_data.get('status_predefined')
+        status_custom = cleaned_data.get('status_custom')
+        if status_predefined and status_predefined != 'Otros':
+            cleaned_data['status_filter'] = status_predefined
+        elif status_custom:
+            cleaned_data['status_filter'] = status_custom
 
         return cleaned_data
+
 
 
 # Nuevo formulario para la solución
