@@ -85,8 +85,6 @@ class TaskForm(forms.ModelForm):
 
         if status_predefined == 'Otros' and not status_custom:
             raise forms.ValidationError('Si seleccionas "Otros", debes proporcionar un estado personalizado.')
-        if not status_predefined and not status_custom:
-            raise forms.ValidationError('Debes seleccionar un estado predefinido o proporcionar uno personalizado.')
         return status_predefined
 
     def clean(self):
